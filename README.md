@@ -32,7 +32,7 @@ pip install local-ffmpeg
 
 ```bash
 # Or clone the repository
-git clone https://github.com/yourusername/local-ffmpeg.git
+git clone https://github.com/atsuiyo/local-ffmpeg
 cd local-ffmpeg
 pip install -e .
 ```
