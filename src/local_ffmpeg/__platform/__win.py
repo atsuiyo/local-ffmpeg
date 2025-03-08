@@ -98,18 +98,29 @@ class WindowsHandler:
             True if FFmpeg is installed, False otherwise
         """
         if not path:
+            print("FFmpeg installation path is not specified.")
             return False
 
-        ffmpeg_path = os.path.join(path, "ffmpeg.exe")
-
-        if not os.path.exists(ffmpeg_path):
+        missing = []
+        for binary in ("ffmpeg.exe", "ffprobe.exe", "ffplay.exe"):
+            binary_path = os.path.join(path, binary)
+            if not os.path.exists(binary_path):
+                missing.append(binary)
+        if missing:
+            print("Missing binaries:", ", ".join(missing))
             return False
 
-        try:
-            # Try running the binary to verify it works
-            result = subprocess.run(
-                [ffmpeg_path, "-version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5
-            )
-            return result.returncode == 0
-        except (subprocess.SubprocessError, OSError):
-            return False
+        for binary in ("ffmpeg.exe", "ffprobe.exe", "ffplay.exe"):
+            binary_path = os.path.join(path, binary)
+            try:
+                result = subprocess.run(
+                    [binary_path, "-version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5
+                )
+                if result.returncode != 0:
+                    print(f"Binary {binary} exists but returned error code {result.returncode}.")
+                    return False
+            except (subprocess.SubprocessError, OSError) as e:
+                print(f"Error while executing {binary}: {e}")
+                return False
+
+        return True

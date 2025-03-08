@@ -119,30 +119,38 @@ class MacOSHandler:
             print(f"FFmpeg installation not found at {install_path}")
 
     def check_installed(self, path: Optional[str] = None) -> bool:
-        """
-        Check if FFmpeg is installed
-
-        Args:
-            path: Directory to check for FFmpeg binaries
-
-        Returns:
-            True if FFmpeg is installed, False otherwise
-        """
-        # First check in the specified path
+        # Check in specified path if provided
         if path and os.path.exists(path):
-            ffmpeg_path = os.path.join(path, "ffmpeg")
-            if os.path.exists(ffmpeg_path) and os.access(ffmpeg_path, os.X_OK):
+            missing = []
+            for binary in ("ffmpeg", "ffprobe", "ffplay"):
+                binary_path = os.path.join(path, binary)
+                if not (os.path.exists(binary_path) and os.access(binary_path, os.X_OK)):
+                    missing.append(binary)
+            if missing:
+                print("Missing binaries:", ", ".join(missing))
+                return False
+            for binary in ("ffmpeg", "ffprobe", "ffplay"):
+                binary_path = os.path.join(path, binary)
                 try:
                     result = subprocess.run(
-                        [ffmpeg_path, "-version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5
+                        [binary_path, "-version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5
                     )
-                    return result.returncode == 0
-                except (subprocess.SubprocessError, OSError):
-                    pass
+                    if result.returncode != 0:
+                        print(f"Binary {binary} exists but returned error code {result.returncode}.")
+                        return False
+                except (subprocess.SubprocessError, OSError) as e:
+                    print(f"Error while executing {binary}: {e}")
+                    return False
+            return True
 
-        # Then check if it's available globally through Homebrew or other means
-        try:
-            result = subprocess.run(["ffmpeg", "-version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5)
-            return result.returncode == 0
-        except (subprocess.SubprocessError, OSError):
-            return False
+        # Global check if path is not provided
+        for binary in ("ffmpeg", "ffprobe", "ffplay"):
+            try:
+                result = subprocess.run([binary, "-version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5)
+                if result.returncode != 0:
+                    print(f"Global binary {binary} returned error code {result.returncode}.")
+                    return False
+            except (subprocess.SubprocessError, OSError) as e:
+                print(f"Error while executing global binary {binary}: {e}")
+                return False
+        return True
