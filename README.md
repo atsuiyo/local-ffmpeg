@@ -104,9 +104,9 @@ The installer:
 
 ## 🗺️ Roadmap
 ### 📋 TODO
-- [ ] Add functionality to install a specified version
+ [ ] Add functionality to install a specified version
 ### ✅ Completed
-- ✅ 🍏 Add macOS (OS X) support for direct installation without requiring Homebrew
+ ✅ 🍏 Add macOS (OS X) support for direct installation without requiring Homebrew
 
 ## 📢 Important Notes
 
